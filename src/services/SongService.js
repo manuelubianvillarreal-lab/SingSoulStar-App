@@ -40,23 +40,35 @@ export const SongService = {
 
     uploadSong: async (metadata, audioFile, coverFile) => {
         try {
-            console.log("Iniciando subida...", { metadata, audioFile, coverFile });
+            console.log("--- INICIANDO PROCESO DE SUBIDA ---");
+            console.log("Metadatos:", metadata);
+            console.log("Archivo Audio:", audioFile);
 
             // Helper to get Blob (Web/Native)
-            const getBlob = async (fileItem) => {
-                if (!fileItem) return null;
-                if (fileItem.file && Platform.OS === 'web') return fileItem.file; // Direct file on web
-                const response = await fetch(fileItem.uri);
-                return await response.blob();
+            const getBlob = async (fileItem, type) => {
+                try {
+                    if (!fileItem) return null;
+                    if (fileItem.file && Platform.OS === 'web') {
+                        console.log(`Usando objeto File directo para ${type}`);
+                        return fileItem.file;
+                    }
+                    console.log(`Obteniendo Blob vía fetch para ${type}: ${fileItem.uri}`);
+                    const response = await fetch(fileItem.uri);
+                    if (!response.ok) throw new Error(`Fetch falló con status ${response.status}`);
+                    return await response.blob();
+                } catch (err) {
+                    console.error(`Error al obtener blob para ${type}:`, err);
+                    throw new Error(`No se pudo procesar el archivo de ${type}. Asegúrate de que el archivo es válido.`);
+                }
             };
 
             // 1. Upload Audio
+            console.log("1. Procesando audio...");
             const audioExt = audioFile.name?.split('.').pop() || 'mp3';
             const audioPath = `${Date.now()}_audio.${audioExt}`;
-            const audioBlob = await getBlob(audioFile);
+            const audioBlob = await getBlob(audioFile, "audio");
 
-            if (!audioBlob) throw new Error("No se pudo procesar el archivo de audio.");
-
+            console.log(`2. Subiendo audio a Supabase Storage (Bucket: singsoulstar-assets, Path: ${audioPath})...`);
             const { data: audioData, error: audioError } = await supabase.storage
                 .from('singsoulstar-assets')
                 .upload(audioPath, audioBlob, {
@@ -66,20 +78,23 @@ export const SongService = {
                 });
 
             if (audioError) {
-                console.error("Storage Error (Audio):", audioError);
-                throw new Error(`Error subiendo audio: ${audioError.message}`);
+                console.error("Error de Storage (Audio):", audioError);
+                throw new Error(`Error al subir audio: ${audioError.message}. Verifica que el bucket 'singsoulstar-assets' existe y es público.`);
             }
 
             const audioUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(audioPath).data.publicUrl;
+            console.log("Audio subido con éxito:", audioUrl);
 
             // 2. Upload Cover (Optional)
             let coverUrl = null;
             if (coverFile) {
+                console.log("3. Procesando portada...");
                 const coverExt = coverFile.name?.split('.').pop() || 'jpg';
                 const coverPath = `${Date.now()}_cover.${coverExt}`;
-                const coverBlob = await getBlob(coverFile);
+                const coverBlob = await getBlob(coverFile, "portada");
 
                 if (coverBlob) {
+                    console.log("4. Subiendo portada...");
                     const { error: coverError } = await supabase.storage
                         .from('singsoulstar-assets')
                         .upload(coverPath, coverBlob, {
@@ -88,12 +103,17 @@ export const SongService = {
                             upsert: false
                         });
 
-                    if (coverError) console.warn("Cover upload failed, continuing without cover:", coverError);
-                    else coverUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(coverPath).data.publicUrl;
+                    if (coverError) {
+                        console.warn("Fallo al subir portada, continuando sin ella:", coverError);
+                    } else {
+                        coverUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(coverPath).data.publicUrl;
+                        console.log("Portada subida con éxito:", coverUrl);
+                    }
                 }
             }
 
             // 3. Insert Record
+            console.log("5. Insertando registro en tabla 'songs'...");
             const { data, error } = await supabase
                 .from('songs')
                 .insert([{
@@ -107,14 +127,15 @@ export const SongService = {
                 .select();
 
             if (error) {
-                console.error("Database Insert Error:", error);
-                throw new Error(`Error en base de datos: ${error.message}`);
+                console.error("Error de Base de Datos:", error);
+                throw new Error(`Error al guardar en base de datos: ${error.message}. Verifica que la tabla 'songs' existe.`);
             }
 
+            console.log("¡SUBIDA COMPLETADA CON ÉXITO!", data[0]);
             return data[0];
 
         } catch (e) {
-            console.error("Upload Error (Detailed):", e);
+            console.error("ERROR CRÍTICO EN SUBIDA:", e);
             throw e;
         }
     },

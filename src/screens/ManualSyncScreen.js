@@ -124,7 +124,7 @@ const ManualSyncScreen = ({ route, navigation }) => {
             ]);
         } catch (e) {
             console.error("Upload Error:", e);
-            Alert.alert('Error', 'Hubo un problema al subir la canción.');
+            Alert.alert('Error de Subida', e.message || 'Hubo un problema desconocido al subir la canción.');
         } finally {
             setIsUploading(false);
         }
