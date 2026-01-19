@@ -28,11 +28,11 @@ const linking = {
   prefixes: [prefix, 'https://manuelubianvillarreal-lab.github.io/SingSoulStar-App'],
   config: {
     screens: {
-      Login: 'login',
+      Login: '',
       Register: 'register',
       MainTabs: {
         screens: {
-          Moments: 'moments',
+          Moments: '',
           Party: 'party',
           Sing: 'sing',
           Message: 'message',
