@@ -22,13 +22,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          yarn install
-          yarn add expo-linking babel-preset-expo --dev
+          npm install --legacy-peer-deps
+          npm install expo-linking babel-preset-expo --save-dev --legacy-peer-deps
 
       - name: Build
         env:
           CI: false
-        run: yarn run build
+        run: npm run build
 
       - name: Add .nojekyll
         run: touch dist/.nojekyll
