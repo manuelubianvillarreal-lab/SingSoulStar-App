@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +9,12 @@ const SettingsScreen = ({ navigation }) => {
     const { logout } = useAuth();
 
     const handleLogout = () => {
+        if (Platform.OS === 'web') {
+            const confirmed = window.confirm("¿Estás seguro que quieres salir?");
+            if (confirmed) logout();
+            return;
+        }
+
         Alert.alert(
             "Cerrar sesión",
             "¿Estás seguro que quieres salir?",

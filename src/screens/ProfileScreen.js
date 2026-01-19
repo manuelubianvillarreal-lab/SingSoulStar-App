@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +15,13 @@ const ProfileScreen = ({ navigation }) => {
     const [activeTab, setActiveTab] = React.useState('Covers');
 
     const handleLogout = async () => {
+        if (Platform.OS === 'web') {
+            // En web, las alertas de React Native a veces fallan. Usamos confirm directo o logout.
+            const confirmed = window.confirm('¿Estás seguro de que quieres salir?');
+            if (confirmed) logout();
+            return;
+        }
+
         Alert.alert('Cerrar Sesión', '¿Estás seguro de que quieres salir?', [
             { text: 'Cancelar', style: 'cancel' },
             { text: 'Cerrar Sesión', style: 'destructive', onPress: logout }

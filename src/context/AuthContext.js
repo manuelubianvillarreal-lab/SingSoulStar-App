@@ -99,13 +99,17 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         setIsLoading(true);
+        console.log("Iniciando cierre de sesión...");
         try {
             await supabase.auth.signOut();
-            setUser(null);
+            console.log("Sesión de Supabase cerrada.");
         } catch (e) {
-            console.error(e);
+            console.error("Error al cerrar sesión en Supabase:", e);
         } finally {
+            // SIEMPRE limpiamos el estado local para permitir volver al Login
+            setUser(null);
             setIsLoading(false);
+            console.log("Estado local de usuario limpiado.");
         }
     };
 
