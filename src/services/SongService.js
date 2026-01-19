@@ -39,13 +39,22 @@ export const SongService = {
 
     uploadSong: async (metadata, audioFile, coverFile) => {
         try {
+            console.log("Iniciando subida...", { metadata, audioFile, coverFile });
+
+            // Helper to get Blob (Web/Native)
+            const getBlob = async (fileItem) => {
+                if (!fileItem) return null;
+                if (fileItem.file && Platform.OS === 'web') return fileItem.file; // Direct file on web
+                const response = await fetch(fileItem.uri);
+                return await response.blob();
+            };
+
             // 1. Upload Audio
             const audioExt = audioFile.name?.split('.').pop() || 'mp3';
             const audioPath = `${Date.now()}_audio.${audioExt}`;
+            const audioBlob = await getBlob(audioFile);
 
-            // Web/Native compatibility: Convert URI to Blob
-            const audioResponse = await fetch(audioFile.uri);
-            const audioBlob = await audioResponse.blob();
+            if (!audioBlob) throw new Error("No se pudo procesar el archivo de audio.");
 
             const { data: audioData, error: audioError } = await supabase.storage
                 .from('singsoulstar-assets')
@@ -55,7 +64,10 @@ export const SongService = {
                     upsert: false
                 });
 
-            if (audioError) throw audioError;
+            if (audioError) {
+                console.error("Storage Error (Audio):", audioError);
+                throw new Error(`Error subiendo audio: ${audioError.message}`);
+            }
 
             const audioUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(audioPath).data.publicUrl;
 
@@ -64,20 +76,20 @@ export const SongService = {
             if (coverFile) {
                 const coverExt = coverFile.name?.split('.').pop() || 'jpg';
                 const coverPath = `${Date.now()}_cover.${coverExt}`;
+                const coverBlob = await getBlob(coverFile);
 
-                const coverResponse = await fetch(coverFile.uri);
-                const coverBlob = await coverResponse.blob();
+                if (coverBlob) {
+                    const { error: coverError } = await supabase.storage
+                        .from('singsoulstar-assets')
+                        .upload(coverPath, coverBlob, {
+                            contentType: coverBlob.type || 'image/jpeg',
+                            cacheControl: '3600',
+                            upsert: false
+                        });
 
-                const { error: coverError } = await supabase.storage
-                    .from('singsoulstar-assets')
-                    .upload(coverPath, coverBlob, {
-                        contentType: coverBlob.type || 'image/jpeg',
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (coverError) throw coverError;
-                coverUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(coverPath).data.publicUrl;
+                    if (coverError) console.warn("Cover upload failed, continuing without cover:", coverError);
+                    else coverUrl = supabase.storage.from('singsoulstar-assets').getPublicUrl(coverPath).data.publicUrl;
+                }
             }
 
             // 3. Insert Record
@@ -86,26 +98,32 @@ export const SongService = {
                 .insert([{
                     title: metadata.title,
                     artist: metadata.artist,
-                    lyrics: metadata.lyrics, // JSON object
+                    lyrics: metadata.lyrics,
                     audio_url: audioUrl,
                     cover_url: coverUrl,
                     created_at: new Date(),
                 }])
                 .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error("Database Insert Error:", error);
+                throw new Error(`Error en base de datos: ${error.message}`);
+            }
+
             return data[0];
 
         } catch (e) {
-            console.error("Upload Error:", e);
+            console.error("Upload Error (Detailed):", e);
             throw e;
         }
     },
 
     parseLrc: (lrcContent) => {
-        const lines = lrcContent.split('\n');
+        if (!lrcContent) return [];
+        const lines = lrcContent.split(/\r?\n/); // Handle different line endings
         const lyrics = [];
-        const timeRegex = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+        // More permissive regex: [00:00.00] or [00:00:00] or [0:00.00]
+        const timeRegex = /\[(\d{1,2}):(\d{2})[.:](\d{2,3})\]/;
 
         lines.forEach(line => {
             const match = timeRegex.exec(line);
@@ -117,10 +135,12 @@ export const SongService = {
                 const text = line.replace(timeRegex, '').trim();
 
                 if (text) {
-                    lyrics.push({ time, text, singer: 'Both' }); // Default to Both
+                    lyrics.push({ time, text, singer: 'Both' });
                 }
             }
         });
-        return lyrics;
+
+        // Sort by time just in case
+        return lyrics.sort((a, b) => a.time - b.time);
     }
 };
