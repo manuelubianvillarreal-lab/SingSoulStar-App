@@ -24,7 +24,6 @@ jobs:
         run: |
           npm install --legacy-peer-deps
           npx expo install --fix
-          npm install expo-linking babel-preset-expo --save-dev --legacy-peer-deps
 
       - name: Build
         env:
