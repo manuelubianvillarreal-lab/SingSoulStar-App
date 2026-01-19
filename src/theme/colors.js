@@ -6,14 +6,14 @@ export const COLORS = {
     secondaryDark: '#7B1FA2',
 
     // Backgrounds
-    background: '#121212', // Dark Mode Base
-    surface: '#1E1E1E', // Card Background
-    surfaceLight: '#2C2C2C',
+    background: '#FFFFFF', // Light Mode Base
+    surface: '#F5F5F5', // Card Background
+    surfaceLight: '#E0E0E0',
 
     // Text
-    text: '#FFFFFF',
-    textSecondary: '#AAAAAA',
-    textMuted: '#666666',
+    text: '#000000',
+    textSecondary: '#555555',
+    textMuted: '#888888',
 
     // Functional
     accent: '#FF4081',
@@ -22,8 +22,8 @@ export const COLORS = {
     warning: '#FFC107',
 
     // UI Elements
-    border: '#333333',
-    tabBar: '#121212',
+    border: '#E0E0E0',
+    tabBar: '#FFFFFF',
 };
 
 export const GRADIENTS = {
