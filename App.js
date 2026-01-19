@@ -1,144 +1,52 @@
 import React from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
-import * as Linking from 'expo-linking';
+import { View, Text, StyleSheet } from 'react-native';
 
-// Contexts
-import { AuthProvider, useAuth } from './src/context/AuthContext';
-
-// Screens
-import LoginScreen from './src/screens/LoginScreen';
-import RecordingScreen from './src/screens/RecordingScreen';
-import AdminScreen from './src/screens/AdminScreen';
-import UploadScreen from './src/screens/UploadScreen';
-import ManualSyncScreen from './src/screens/ManualSyncScreen';
-import RoomDetailScreen from './src/screens/RoomDetailScreen';
-import GroupsScreen from './src/screens/GroupsScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import MainTabNavigator from './src/navigation/MainTabNavigator';
-import { COLORS } from './src/theme/colors';
-
-const prefix = Linking.createURL('/');
-
-const linking = {
-  prefixes: [prefix, 'https://manuelubianvillarreal-lab.github.io/SingSoulStar-App'],
-  config: {
-    screens: {
-      Login: '',
-      Register: 'register',
-      MainTabs: {
-        screens: {
-          Moments: '',
-          Party: 'party',
-          Sing: 'sing',
-          Message: 'message',
-          Me: 'me',
-        },
-      },
-      Recording: 'recording',
-      Upload: 'upload',
-      ManualSync: 'manual-sync',
-      RoomDetail: 'room/:id',
-      Groups: 'groups',
-      AdminDashboard: 'admin',
-    },
-  },
-};
-
-const Stack = createNativeStackNavigator();
-
-// Simple Error Boundary Implementation
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20, backgroundColor: 'red' }}>
-          <Text style={{ color: 'white', fontSize: 20, fontWeight: 'bold' }}>Algo salió mal 😢</Text>
-          <Text style={{ color: 'white', marginTop: 10 }}>{this.state.error && this.state.error.toString()}</Text>
-        </View>
-      );
-    }
-
-    return this.props.children;
-  }
+// Global error catcher to print startup errors to the screen
+if (typeof window !== 'undefined') {
+  window.onerror = function (message, source, lineno, colno, error) {
+    // Attempt to show error on screen if React fails
+    const root = document.getElementById('root') || document.body;
+    const errorMsg = document.createElement('div');
+    errorMsg.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:black; color:red; padding:20px; z-index:9999; overflow:auto;';
+    errorMsg.innerHTML = `<h1>CRITICAL ERROR</h1><pre>${message}\n${source}:${lineno}</pre>`;
+    root.appendChild(errorMsg);
+  };
 }
-
-const AppContent = () => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-      </View>
-    );
-  }
-
-  return (
-    <NavigationContainer linking={linking} fallback={<ActivityIndicator color={COLORS.primary} />}>
-      {user ? (
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: COLORS.background },
-          }}
-        >
-          {user.role === 'admin' ? (
-            <Stack.Screen name="AdminDashboard" component={AdminScreen} />
-          ) : (
-            <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-          )}
-
-          <Stack.Screen
-            name="Recording"
-            component={RecordingScreen}
-            options={{
-              presentation: 'card',
-              animation: 'slide_from_bottom',
-            }}
-          />
-          <Stack.Screen name="Upload" component={UploadScreen} />
-          <Stack.Screen name="ManualSync" component={ManualSyncScreen} />
-          <Stack.Screen name="RoomDetail" component={RoomDetailScreen} />
-          <Stack.Screen name="Groups" component={GroupsScreen} />
-        </Stack.Navigator>
-      ) : (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </Stack.Navigator>
-      )}
-    </NavigationContainer>
-  );
-};
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <ErrorBoundary>
-        <AuthProvider>
-          <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-            <StatusBar style="light" backgroundColor={COLORS.background} />
-            <AppContent />
-          </View>
-        </AuthProvider>
-      </ErrorBoundary>
-    </SafeAreaProvider>
+    <View style={styles.container}>
+      <Text style={styles.text}>✅ CONEXIÓN EXITOSA</Text>
+      <Text style={styles.subtext}>Si ves esto, el servidor funciona perfectamente.</Text>
+      <Text style={styles.note}>Ahora restauraremos la app pieza por pieza para encontrar el bug.</Text>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0066CC', // Bright blue to standard out
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  text: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  subtext: {
+    fontSize: 18,
+    color: 'white', // White text
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  note: {
+    fontSize: 14,
+    color: '#E0E0E0',
+    textAlign: 'center',
+  },
+});
