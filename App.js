@@ -29,7 +29,11 @@ const SAFE_BG = '#FFFFFF'; // Light Mode
 const prefix = Linking.createURL('/');
 
 const linking = {
-  prefixes: [prefix, 'https://manuelubianvillarreal-lab.github.io/SingSoulStar-App'],
+  prefixes: [
+    prefix,
+    'https://manuelubianvillarreal-lab.github.io/SingSoulStar-App',
+    'sing-soul-star://'
+  ],
   config: {
     screens: {
       Login: 'login',

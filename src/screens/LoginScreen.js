@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, TextInput, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, TextInput, Dimensions, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, GRADIENTS } from '../theme/colors';
@@ -8,250 +8,173 @@ import { StatusBar } from 'expo-status-bar';
 
 const { width, height } = Dimensions.get('window');
 
-const LoginScreen = () => {
-    const { login } = useAuth();
+const LoginScreen = ({ navigation }) => {
+    const { login, isLoading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = () => {
-        if (!email) return alert('Please enter an email (Try admin@singsoulstar.com)');
-        login(email, password);
+    const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Por favor ingresa email y contraseña');
+            return;
+        }
+        await login(email, password);
     };
 
-    const handleMockLogin = (role) => {
-        if (role === 'admin') login('admin@singsoulstar.com', '123456');
-        else if (role === 'assistant') login('assistant@singsoulstar.com', '123456');
-        else login('user@test.com', '123456');
+    const quickLogin = (roleEmail) => {
+        setEmail(roleEmail);
+        setPassword('password'); // Password is fake for quick login, auth handles it
     };
 
     return (
         <View style={styles.container}>
-            <StatusBar style="light" />
-
-            {/* Background (Mocking a video background with gradient overlay) */}
+            <StatusBar style="dark" />
             <ImageBackground
-                source={{ uri: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1000&auto=format&fit=crop' }}
+                source={{ uri: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1000' }}
                 style={styles.backgroundImage}
             >
                 <LinearGradient
-                    colors={['rgba(0,0,0,0.3)', COLORS.background]}
+                    colors={['rgba(255,255,255,0.1)', COLORS.background]}
                     style={StyleSheet.absoluteFill}
                 />
             </ImageBackground>
 
-            <View style={styles.content}>
-                {/* Logo Area */}
-                <View style={styles.logoContainer}>
-                    <Ionicons name="mic-circle" size={80} color={COLORS.primary} />
-                    <Text style={styles.appName}>SingSoulStar</Text>
-                    <Text style={styles.tagline}>Sing your heart out!</Text>
-                </View>
-
-                {/* Form Area */}
-                <View style={styles.formContainer}>
-                    <View style={styles.inputContainer}>
-                        <Ionicons name="mail-outline" size={20} color="white" style={styles.inputIcon} />
-                        <TextInput
-                            placeholder="Email / Phone"
-                            placeholderTextColor="rgba(255,255,255,0.6)"
-                            style={styles.input}
-                            value={email}
-                            onChangeText={setEmail}
-                            autoCapitalize="none"
-                        />
-                    </View>
-                    <View style={styles.inputContainer}>
-                        <Ionicons name="lock-closed-outline" size={20} color="white" style={styles.inputIcon} />
-                        <TextInput
-                            placeholder="Password"
-                            placeholderTextColor="rgba(255,255,255,0.6)"
-                            style={styles.input}
-                            secureTextEntry
-                            value={password}
-                            onChangeText={setPassword}
-                        />
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.content}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContent}>
+                    <View style={styles.header}>
+                        <IconLogo />
+                        <Text style={styles.title}>SingSoulStar</Text>
+                        <Text style={styles.subtitle}>Sing your heart out!</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-                        <LinearGradient
-                            colors={GRADIENTS.primary}
-                            start={[0, 0]}
-                            end={[1, 0]}
-                            style={styles.gradientBtn}
-                        >
-                            <Text style={styles.loginBtnText}>Log In</Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
+                    <View style={styles.form}>
+                        <View style={styles.inputBox}>
+                            <Ionicons name="mail-outline" size={24} color={COLORS.textMuted} style={styles.icon} />
+                            <TextInput
+                                placeholder="Email"
+                                placeholderTextColor={COLORS.textMuted}
+                                style={styles.input}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                            />
+                        </View>
 
-                    <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                        <View style={styles.inputBox}>
+                            <Ionicons name="lock-closed-outline" size={24} color={COLORS.textMuted} style={styles.icon} />
+                            <TextInput
+                                placeholder="Password"
+                                placeholderTextColor={COLORS.textMuted}
+                                style={styles.input}
+                                secureTextEntry
+                                value={password}
+                                onChangeText={setPassword}
+                            />
+                        </View>
 
-                    {/* Quick Dev Login Buttons (For Demo) */}
-                    <View style={styles.devTools}>
-                        <Text style={styles.devText}>Dev Quick Login:</Text>
-                        <View style={styles.devButtons}>
-                            <TouchableOpacity onPress={() => handleMockLogin('admin')} style={[styles.devBtn, { borderColor: 'red' }]}>
-                                <Text style={{ color: 'red' }}>Admin</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleMockLogin('assistant')} style={[styles.devBtn, { borderColor: 'orange' }]}>
-                                <Text style={{ color: 'orange' }}>Assistant</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleMockLogin('user')} style={[styles.devBtn, { borderColor: 'green' }]}>
-                                <Text style={{ color: 'green' }}>User</Text>
-                            </TouchableOpacity>
+                        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={isLoading}>
+                            <LinearGradient colors={GRADIENTS.primary} style={styles.gradient}>
+                                {isLoading ? (
+                                    <ActivityIndicator color="white" />
+                                ) : (
+                                    <Text style={styles.loginText}>Log In</Text>
+                                )}
+                            </LinearGradient>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.forgotBtn}>
+                            <Text style={styles.forgotText}>Forgot Password?</Text>
+                        </TouchableOpacity>
+
+                        {/* Dev Quick Login */}
+                        <View style={styles.devSection}>
+                            <Text style={styles.devTitle}>Dev Quick Login:</Text>
+                            <View style={styles.devRow}>
+                                <TouchableOpacity style={[styles.devBtn, { borderColor: COLORS.error }]} onPress={() => quickLogin('admin@singsoulstar.com')}>
+                                    <Text style={{ color: COLORS.error }}>Admin</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.devBtn, { borderColor: COLORS.warning }]} onPress={() => quickLogin('assistant@test.com')}>
+                                    <Text style={{ color: COLORS.warning }}>Assistant</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.devBtn, { borderColor: COLORS.success }]} onPress={() => quickLogin('user@test.com')}>
+                                    <Text style={{ color: COLORS.success }}>User</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <Text style={styles.orText}>Or login with</Text>
+
+                        <View style={styles.socialRow}>
+                            <SocialButton icon="logo-google" color="#DB4437" />
+                            <SocialButton icon="logo-facebook" color="#4267B2" />
+                            <SocialButton icon="logo-apple" color={COLORS.text} />
                         </View>
                     </View>
 
-                    {/* Social Login */}
-                    <View style={styles.socialContainer}>
-                        <Text style={styles.socialText}>Or login with</Text>
-                        <View style={styles.socialButtons}>
-                            <TouchableOpacity
-                                style={styles.socialBtn}
-                                onPress={() => {
-                                    Alert.alert('Google Sign-In', 'Simulating zero-cost Google OAuth flow...');
-                                    setTimeout(() => login('google_user@gmail.com', ''), 1000);
-                                }}
-                            >
-                                <Ionicons name="logo-google" size={24} color="white" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Facebook', 'Feature coming soon (Zero-cost simulation)')}>
-                                <Ionicons name="logo-facebook" size={24} color="white" />
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.socialBtn} onPress={() => Alert.alert('Apple', 'Feature coming soon (Zero-cost simulation)')}>
-                                <Ionicons name="logo-apple" size={24} color="white" />
-                            </TouchableOpacity>
-                        </View>
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>¿Eres nuevo en SingSoulStar?</Text>
+                        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                            <Text style={styles.signupText}> Regístrate</Text>
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity style={{ marginTop: 30 }} onPress={() => navigation.navigate('Register')}>
-                        <Text style={{ color: COLORS.primary, textAlign: 'center', fontWeight: 'bold' }}>
-                            ¿Eres nuevo en SingSoulStar? <Text style={{ color: 'white' }}>Regístrate Gratis</Text>
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </View>
     );
 };
 
+const IconLogo = () => (
+    <View style={styles.logoCircle}>
+        <LinearGradient
+            colors={GRADIENTS.singButton}
+            style={styles.logoGradient}
+        >
+            <Ionicons name="mic" size={40} color="white" />
+        </LinearGradient>
+    </View>
+);
+
+const SocialButton = ({ icon, color }) => (
+    <TouchableOpacity style={styles.socialBtn}>
+        <Ionicons name={icon} size={24} color={color} />
+    </TouchableOpacity>
+);
+
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
-    backgroundImage: {
-        width: width,
-        height: height * 0.6,
-        position: 'absolute',
-        top: 0,
-    },
-    content: {
-        flex: 1,
-        justifyContent: 'flex-end',
-    },
-    logoContainer: {
-        alignItems: 'center',
-        marginBottom: 40,
-        height: height * 0.4,
-        justifyContent: 'center',
-    },
-    appName: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: 'white',
-        marginTop: 10,
-    },
-    tagline: {
-        color: 'rgba(255,255,255,0.8)',
-        fontSize: 16,
-    },
-    formContainer: {
-        backgroundColor: COLORS.background, // Solid background for form area
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        padding: 30,
-        paddingTop: 40,
-        minHeight: height * 0.5,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: 'rgba(255,255,255,0.2)',
-        marginBottom: 20,
-        paddingBottom: 10,
-    },
-    inputIcon: {
-        marginRight: 10,
-    },
-    input: {
-        flex: 1,
-        color: 'white',
-        fontSize: 16,
-    },
-    loginBtn: {
-        marginTop: 20,
-        borderRadius: 25,
-        overflow: 'hidden',
-    },
-    gradientBtn: {
-        paddingVertical: 15,
-        alignItems: 'center',
-    },
-    loginBtnText: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    forgotPassword: {
-        color: COLORS.textMuted,
-        textAlign: 'center',
-        marginTop: 15,
-    },
-    socialContainer: {
-        marginTop: 40,
-        alignItems: 'center',
-    },
-    socialText: {
-        color: COLORS.textMuted,
-        marginBottom: 20,
-    },
-    socialButtons: {
-        flexDirection: 'row',
-        width: '60%',
-        justifyContent: 'space-between',
-    },
-    socialBtn: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.3)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    devTools: {
-        marginTop: 20,
-        padding: 10,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 10,
-    },
-    devText: {
-        color: 'gray',
-        fontSize: 12,
-        marginBottom: 5,
-        textAlign: 'center',
-    },
-    devButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-    },
-    devBtn: {
-        borderWidth: 1,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 5,
-    }
+    container: { flex: 1, backgroundColor: COLORS.background },
+    backgroundImage: { width, height: height * 0.5, position: 'absolute', top: 0, opacity: 0.1 }, // Faded background for light theme
+    content: { flex: 1 },
+    scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 30 },
+    header: { alignItems: 'center', marginBottom: 40, marginTop: 60 },
+    logoCircle: { marginBottom: 15, elevation: 10, shadowColor: COLORS.primary, shadowOpacity: 0.3, shadowRadius: 10 },
+    logoGradient: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center' },
+    title: { color: COLORS.text, fontSize: 32, fontWeight: 'bold' },
+    subtitle: { color: COLORS.textSecondary, fontSize: 16, marginTop: 5 },
+    form: { backgroundColor: COLORS.surface, borderRadius: 20, padding: 20, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4 },
+    inputBox: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: COLORS.border, marginBottom: 25, paddingBottom: 10 },
+    icon: { marginRight: 15 },
+    input: { flex: 1, color: COLORS.text, fontSize: 16 },
+    loginBtn: { borderRadius: 25, overflow: 'hidden', marginTop: 10, elevation: 5 },
+    gradient: { paddingVertical: 15, alignItems: 'center' },
+    loginText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+    forgotBtn: { marginTop: 15, alignItems: 'center' },
+    forgotText: { color: COLORS.textMuted, fontSize: 14 },
+    orText: { color: COLORS.textMuted, textAlign: 'center', marginVertical: 20 },
+    socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 20 },
+    socialBtn: { width: 50, height: 50, borderRadius: 25, backgroundColor: COLORS.background, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: COLORS.border },
+    footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
+    footerText: { color: COLORS.textMuted },
+    signupText: { color: COLORS.primary, fontWeight: 'bold', marginLeft: 5 },
+
+    // Dev
+    devSection: { marginTop: 20, alignItems: 'center' },
+    devTitle: { color: COLORS.textMuted, fontSize: 12, marginBottom: 5 },
+    devRow: { flexDirection: 'row', gap: 10 },
+    devBtn: { padding: 5, borderWidth: 1, borderRadius: 5, minWidth: 60, alignItems: 'center' },
 });
 
 export default LoginScreen;
