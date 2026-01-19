@@ -21,14 +21,12 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: |
-          npm install --legacy-peer-deps
-          npm install babel-preset-expo --save-dev --legacy-peer-deps
+        run: yarn install
 
       - name: Build
         env:
           CI: false
-        run: npm run build
+        run: yarn run build
 
       - name: Add .nojekyll
         run: touch dist/.nojekyll
