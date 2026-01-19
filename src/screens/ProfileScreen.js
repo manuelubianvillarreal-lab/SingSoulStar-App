@@ -1,5 +1,10 @@
+import React from 'react';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, Alert, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, GRADIENTS } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
-import { TextInput, Alert, Modal } from 'react-native';
 
 const ProfileScreen = () => {
     const { user, logout, updateProfile } = useAuth();
