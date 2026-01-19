@@ -47,8 +47,8 @@ const UploadScreen = ({ navigation }) => {
             songData: {
                 title,
                 artist,
-                audioUri: audioFile.uri,
-                coverUri: coverImage ? coverImage.uri : 'https://via.placeholder.com/300',
+                audioFile: audioFile,
+                coverFile: coverImage, // Can be null
                 rawLyrics: lyrics,
             }
         });

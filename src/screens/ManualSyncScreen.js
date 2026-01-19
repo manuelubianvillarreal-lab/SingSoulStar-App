@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS, GRADIENTS } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SongService } from '../services/SongService';
 
 const ManualSyncScreen = ({ route, navigation }) => {
     const { songData } = route.params;
@@ -69,28 +70,31 @@ const ManualSyncScreen = ({ route, navigation }) => {
     };
 
     const saveSong = async () => {
-        const finalSong = {
-            id: 's_' + Date.now(),
-            title: songData.title,
-            artist: songData.artist,
-            cover: songData.coverUri,
-            lyrics: syncedLyrics,
-            audio: songData.audioUri,
-            status: 'pending_review'
-        };
+        setIsPlaying(false); // Ensure playback stops
 
         try {
-            const existing = await AsyncStorage.getItem('user_songs');
-            const songs = existing ? JSON.parse(existing) : [];
-            songs.push(finalSong);
-            await AsyncStorage.setItem('user_songs', JSON.stringify(songs));
+            // Prepare metadata
+            const metadata = {
+                title: songData.title,
+                artist: songData.artist,
+                lyrics: syncedLyrics
+            };
 
-            Alert.alert('¡Subida Exitosa!', 'Tu canción ha sido enviada y está pendiente de aprobación por un administrador.', [
-                { text: 'OK', onPress: () => navigation.navigate('MainTabs') }
+            // Call Cloud Service
+            // Note: We need to handle file conversion for Web/Native compatibility if needed
+            // But checking SongService, it expects the file objects.
+
+            Alert.alert('Subiendo...', 'Tu canción se está enviando a la nube. Esto puede tardar unos segundos.');
+
+            await SongService.uploadSong(metadata, songData.audioFile, songData.coverFile);
+
+            Alert.alert('¡Éxito!', 'Canción publicada en el catálogo global de SingSoulStar 🌍', [
+                { text: 'Genial', onPress: () => navigation.navigate('MainTabs') }
             ]);
+
         } catch (e) {
-            console.error(e);
-            Alert.alert('Error', 'No se pudo guardar la canción.');
+            console.error("Upload Error:", e);
+            Alert.alert('Error', 'Hubo un problema al subir la canción. Asegúrate de que el bucket "singsoulstar-assets" exista y sea público.');
         }
     };
 
