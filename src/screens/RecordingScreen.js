@@ -400,19 +400,19 @@ const styles = StyleSheet.create({
     pitchHost: { height: 120, marginVertical: 20 },
     lyricsWrapper: { flex: 1, paddingHorizontal: 20 },
 
-    bottomControls: { paddingBottom: 40, alignItems: 'center' },
-    timeInfo: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 25 },
-    timerLarge: { color: 'white', fontSize: 40, fontWeight: '300' },
+    bottomControls: { paddingBottom: 50, alignItems: 'center' },
+    timeInfo: { flexDirection: 'row', alignItems: 'baseline', marginBottom: 30 },
+    timerLarge: { color: 'white', fontSize: 48, fontWeight: '200', letterSpacing: 2 },
     totalTime: { color: 'rgba(255,255,255,0.5)', fontSize: 16 },
 
-    actionsRow: { flexDirection: 'row', alignItems: 'center', width: '90%', justifyContent: 'space-around' },
-    sideBtn: { alignItems: 'center', gap: 5 },
-    iconCircle: { width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.08)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
-    sideText: { color: 'rgba(255,255,255,0.6)', fontSize: 12 },
+    actionsRow: { flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'space-evenly', paddingHorizontal: 20 },
+    sideBtn: { alignItems: 'center', gap: 8 },
+    iconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
+    sideText: { color: 'rgba(255,255,255,0.8)', fontSize: 11, fontWeight: '600' },
 
-    mainRecordBtn: { width: 90, height: 90, borderRadius: 45, padding: 4, backgroundColor: 'rgba(255,255,255,0.2)' },
-    recordGradient: { flex: 1, borderRadius: 42, justifyContent: 'center', alignItems: 'center' },
-    recordHole: { width: 70, height: 70, borderRadius: 35, backgroundColor: 'rgba(0,0,0,0.1)', justifyContent: 'center', alignItems: 'center' },
+    mainRecordBtn: { width: 100, height: 100, borderRadius: 50, padding: 3, backgroundColor: 'rgba(255,255,255,0.15)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)' },
+    recordGradient: { flex: 1, borderRadius: 50, justifyContent: 'center', alignItems: 'center' },
+    recordHole: { width: 40, height: 40, borderRadius: 10, backgroundColor: 'white', opacity: 0.9 }, // Square for stop
 
     // Modal
     modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },

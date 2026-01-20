@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
 
     formElement: { marginBottom: 20 },
     label: { color: COLORS.textSecondary, marginBottom: 5, fontSize: 12, textTransform: 'uppercase', fontWeight: '600' },
-    input: { backgroundColor: '#F9FAFB', color: COLORS.text, padding: 15, borderRadius: 10, fontSize: 16, borderWidth: 1, borderColor: '#E5E7EB' },
+    input: { backgroundColor: '#F9FAFB', color: '#000000', padding: 15, borderRadius: 10, fontSize: 16, borderWidth: 1, borderColor: '#E5E7EB' },
     textArea: { height: 100, textAlignVertical: 'top' },
     row: { flexDirection: 'row' }
 });
